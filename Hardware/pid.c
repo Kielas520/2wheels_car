@@ -28,42 +28,39 @@ void angle_pid_control(pid_t *pid, float pitch)
 	pidout_limit(&angle);	
 
 	// PID输出值 输入给电机PID控制器
-	motorA.now = angle.out;
-	motorB.now = angle.out;
+	motorA.target = angle.out;
+	motorB.target = angle.out;
 }
 
-void speed_pid_control(pid_t *pid)
+void speed_pid_controlA()
 {
-	if(pid == &motorA)
-	{
-		// 计算输出
-		motorA.now = EncoderA_Get();
+	// 计算输出
+	motorA.now = EncoderA_Get();
 
-		// 输入PID控制器进行计算
-		pid_cal(&motorA);
+	// 输入PID控制器进行计算
+	pid_cal(&motorA);
 
-		// 电机输出限幅
-		pidout_limit(&motorA);
+	// 电机输出限幅
+	pidout_limit(&motorA);
 
-		// PID输出值 输入给电机
-		Motor_SetSpeedA(motorA.out);
-	}
-	if(pid == &motorB)
-	{
-		// 计算输出
-		motorB.now = EncoderB_Get();
-		
-		// 输入PID控制器进行计算
-		pid_cal(&motorB);
-		
-		// 电机输出限幅
-		pidout_limit(&motorB);	
-
-		// PID输出值 输入给电机
-		Motor_SetSpeedB(motorB.out);
-	}
+	// PID输出值 输入给电机
+	Motor_SetSpeedA(motorA.out);
 }
 
+void speed_pid_controlB()
+{
+	// 计算输出
+	motorB.now = EncoderB_Get();
+	
+	// 输入PID控制器进行计算
+	pid_cal(&motorB);
+	
+	// 电机输出限幅
+	pidout_limit(&motorB);	
+
+	// PID输出值 输入给电机
+	Motor_SetSpeedB(motorB.out);
+}
 
 void pid_cal(pid_t *pid)
 {
@@ -97,10 +94,10 @@ void pidout_limit(pid_t *pid)
 	if(pid !=&angle)
 	{
 		// 限制电机速度范围
-		if (pid->out > MAX_DUTY) 
-			pid->out = MAX_DUTY; // 设置最大正速度
-		else if (pid->out < -MAX_DUTY) 
-			pid->out = -MAX_DUTY; // 设置最大负速度
+		if (pid->out > MAX_SPEED) 
+			pid->out = MAX_SPEED; // 设置最大正速度
+		else if (pid->out < -MAX_SPEED) 
+			pid->out = -MAX_SPEED; // 设置最大负速度
 	}
 	else
 	{
